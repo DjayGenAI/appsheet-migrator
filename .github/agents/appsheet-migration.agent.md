@@ -79,7 +79,7 @@ Use the `#skill:appsheet-migration-recommendation` skill to turn the scorecard i
 1. **Get explicit sign-off** on the recommended path before building anything.
 2. **Author the handoff contract** with the `#skill:migration-blueprint` skill — write `spec/migration-blueprint.md` (+ `spec/app-inventory.json`) containing the chosen path, feature mapping, ordered build backlog, and per-task acceptance criteria.
 3. **Hand over automatically** by invoking the right builder subagent (`runSubagent`), passing the blueprint path:
-   - Power Platform → **Power Platform Builder**, then **Power Platform Tester**.
+   - Power Platform → **Power Platform Builder**, then **Power Platform Tester**. Before handover, confirm the **Canvas Authoring MCP** (`canvas-authoring` server in `.vscode/mcp.json`, `canvasauthori` tools) is installed and connected — the builder MUST use it and the `#skill:powerplatform-build` skill to author/compile every canvas screen. If the MCP is missing, walk the user through installing it (install the .NET 10 SDK so `dnx` is available, then start the `canvas-authoring` server) before proceeding.
    - Pro Dev → **.NET Builder**, then **.NET Tester**.
    - Hybrid → both tracks, coordinating the split defined in the blueprint.
 4. **Drive the build/test loop**: after a builder finishes, invoke its paired tester. If the tester returns FAIL with a fix list, re-invoke the builder with that list. Repeat until PASS, then report the result to the user.

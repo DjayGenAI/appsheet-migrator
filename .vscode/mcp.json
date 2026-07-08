@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "canvas-authoring": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": [
+        "Microsoft.PowerApps.CanvasAuthoring.McpServer",
+        "--yes",
+        "--prerelease",
+        "--source",
+        "https://api.nuget.org/v3/index.json"
+      ]
+    }
+  }
+}
