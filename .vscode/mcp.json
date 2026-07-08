@@ -10,6 +10,14 @@
         "--source",
         "https://api.nuget.org/v3/index.json"
       ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
     }
   }
 }

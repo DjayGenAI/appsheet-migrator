@@ -14,7 +14,10 @@ flowchart TD
     B -- Yes --> C[Analyze &amp; catalog the app inventory]
     B -- No --> D[Structured discovery interview]
     D --> C
-    C --> E[Map features to Power Platform &amp; flag gaps]
+    C --> V{Use visual discovery?}
+    V -- Yes: user logs in --> W[Playwright walks the live app<br/>screenshots + UX inventory to spec/]
+    V -- No --> E
+    W --> E[Map features to Power Platform &amp; flag gaps]
     E --> F[Interactive Decision Tree - 8 complexity gates]
     F --> G[Migration Scorecard + recommended path]
     G --> H{User signs off?}
@@ -36,11 +39,12 @@ flowchart TD
 
 1. **Intake** — The user submits an AppSheet JSON export (or, if none exists, answers a guided interview). Everything downstream is built from this inventory.
 2. **Analyze** — The app is parsed and cataloged (tables, columns, expressions, automations, security, offline, AI features), and every export gap is challenged before moving on.
-3. **Map** — Each AppSheet feature is mapped to its Power Platform equivalent, with ✅ / ⚠️ / ❌ confidence markers and an honest gap analysis.
-4. **Decide** — An interactive **decision tree** scores eight complexity gates and produces a **Migration Scorecard** with a recommended path.
-5. **Recommend & sign off** — The recommendation (Power Platform, Pro Dev, or Hybrid) is presented with architecture, phasing, licensing, and risks. Nothing is built until the user approves.
-6. **Blueprint** — A handoff contract is written to `spec/` (chosen path, feature mapping, ordered build backlog, per-task acceptance criteria).
-7. **Build → test loop** — The right builder implements the backlog; its paired tester validates against the acceptance criteria. On FAIL, the tester returns a fix list keyed to task IDs and the builder rebuilds. Repeat until PASS.
+3. **Visual discovery (optional)** — Because Google exposes no API for an app's UX, the agent can drive the **live** app with the Playwright MCP to capture what the JSON can't: real screens, navigation, theme, and form layouts. The user is asked whether they want this and is told up front that **they'll log in themselves** (AppSheet requires Google sign-in; the agent never handles credentials). Screenshots and a UX inventory are written to `spec/visual-discovery/` and later used as the **design target** for the rebuild.
+4. **Map** — Each AppSheet feature is mapped to its Power Platform equivalent, with ✅ / ⚠️ / ❌ confidence markers and an honest gap analysis.
+5. **Decide** — An interactive **decision tree** scores eight complexity gates and produces a **Migration Scorecard** with a recommended path.
+6. **Recommend & sign off** — The recommendation (Power Platform, Pro Dev, or Hybrid) is presented with architecture, phasing, licensing, and risks. Nothing is built until the user approves.
+7. **Blueprint** — A handoff contract is written to `spec/` (chosen path, feature mapping, ordered build backlog, per-task acceptance criteria). If visual discovery ran, the blueprint references `spec/visual-discovery/` so design intent is part of the contract.
+8. **Build → test loop** — The right builder implements the backlog; its paired tester validates against the acceptance criteria. On FAIL, the tester returns a fix list keyed to task IDs and the builder rebuilds. Repeat until PASS. On the Power Platform path, the builder matches the canvas screens to the captured screenshots for design fidelity.
 
 ---
 
@@ -102,6 +106,17 @@ Canvas screens **must** be authored, compiled, and validated through the **Canva
 
 Because `.vscode/mcp.json` is committed, anyone who clones the repo gets the server definition — they only need the .NET SDK.
 
+### Playwright MCP (optional — visual discovery of the source app)
+
+Google exposes **no** API for an AppSheet app's UX or definition (the public AppSheet API is data-CRUD + admin/monitoring only), so the only way to capture what the app *looks like* is to drive the running app. The **Playwright MCP** does exactly that: it opens the live AppSheet app in a real browser, the user logs in, and the agent walks every view — taking screenshots and structured accessibility snapshots — then writes a UX inventory to `spec/visual-discovery/`. That inventory becomes the **design target** the Power Platform builder matches when authoring the canvas screens.
+
+- **Opt-in** — the agent asks whether you want visual discovery; it's never forced.
+- **You log in, not the agent** — AppSheet requires Google sign-in. The agent opens the app and **hands you the browser** to sign in; it never sees or handles your credentials.
+- **Read-only by default** — the agent navigates and screenshots; it won't write data or fire destructive actions without explicit approval.
+- **Role matters** — conditional formatting and row-level security depend on the signed-in role, so you pick which account best represents the app; coverage gaps are reported honestly.
+
+The server is declared in [.vscode/mcp.json](.vscode/mcp.json) as `playwright` and runs via `npx @playwright/mcp@latest`, so **Node.js** is the only prerequisite. Open [.vscode/mcp.json](.vscode/mcp.json) and **Start** the `playwright` server (first run installs the package and a browser automatically).
+
 ### Microsoft Learn MCP (recommended)
 
 Every capability, limit, or feature-equivalence claim is verified against live documentation via the **Microsoft Learn MCP** rather than trained knowledge. If it is unavailable, the agents pause instead of asserting unverified claims.
@@ -115,9 +130,9 @@ Every capability, limit, or feature-equivalence claim is verified against live d
   agents/         # The orchestrator + builder + tester agents
   skills/         # Reusable skills (analyzer, mapper, advisor, blueprint, build, validation, research)
 .vscode/
-  mcp.json        # Canvas Authoring MCP server definition
+  mcp.json        # Canvas Authoring MCP + Playwright MCP server definitions
 AGENTS.md         # Shared conventions for all agents/skills
-spec/             # Per-project outputs: inventory, blueprint, research, test reports (git-ignored)
+spec/             # Per-project outputs: inventory, blueprint, research, visual-discovery, test reports (git-ignored)
 build/            # Per-project outputs: the generated migrated app (git-ignored)
 ```
 
@@ -127,10 +142,10 @@ build/            # Per-project outputs: the generated migrated app (git-ignored
 
 ## Getting started
 
-1. Ensure the prerequisites above are installed (.NET 10 SDK for the Power Platform MCP; Microsoft Learn MCP available).
-2. Open the repo in VS Code and start the `canvas-authoring` MCP server.
+1. Ensure the prerequisites above are installed (.NET 10 SDK for the Power Platform MCP; Node.js if you want Playwright visual discovery; Microsoft Learn MCP available).
+2. Open the repo in VS Code and start the `canvas-authoring` MCP server (and the `playwright` server if you plan to use visual discovery).
 3. Invoke the **AppSheet Migration Specialist** agent and provide the path to your AppSheet JSON export (or ask to be interviewed if you don't have one).
-4. Work through the assessment, approve the recommended path, and let the build/test loop run to a PASS.
+4. Work through the assessment — including optional visual discovery of your live app — approve the recommended path, and let the build/test loop run to a PASS.
 
 ---
 

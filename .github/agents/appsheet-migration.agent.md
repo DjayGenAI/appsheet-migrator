@@ -46,6 +46,14 @@ When the user starts a session:
 
 Use the `#skill:appsheet-analyzer` skill to load and catalog the full app inventory, then run its completeness-validation step to challenge the user on every JSON export gap found before moving on.
 
+### A2 — Offer Visual Discovery (optional, opt-in)
+
+The JSON export captures the app's **logic** but not its **look and feel** — and Google exposes no API for the app's UX. Offer to close that gap by driving the *running* app with the **Playwright MCP**:
+
+> "I can also open your **live** app in a browser and walk through it to capture the actual screens, navigation, theme, and form layouts. This gives me a design spec so the rebuilt canvas app looks and feels like the original — not just works like it. It's optional. If you want this, note that **AppSheet apps require Google sign-in: I'll open the app and hand the browser to you to log in yourself — I never see your credentials.** Want to do visual discovery?"
+
+If the user opts in, use the `#skill:appsheet-visual-discovery` skill: confirm the `playwright` server (in `.vscode/mcp.json`) is connected, ask for the app URL and which role/test account to use, open the app, **pause for the user to log in**, then systematically screenshot and catalog every view. The skill writes screenshots and `spec/visual-discovery/ux-inventory.md` to the `spec/` folder. If the user declines, note that the rebuild will rely on the JSON export + interview only (lower design fidelity) and continue.
+
 ### A3 — Map to Power Platform
 
 Use the `#skill:power-platform-mapper` skill to produce the full feature mapping and gap analysis.
@@ -59,6 +67,8 @@ Use the `#skill:appsheet-migration-advisor` skill to walk the interactive decisi
 ## Path B: No JSON — Structured Interview
 
 When no JSON is available, use the `#skill:appsheet-migration-interview` skill to run a one-topic-at-a-time discovery interview, then synthesize the answers into an inventory equivalent to the analyzer output before proceeding to the Decision Tree.
+
+If the user has a **running** app (even without an export), also offer **visual discovery** (`#skill:appsheet-visual-discovery`) — with no JSON to lean on, the screenshots become an even more important record of what the app does and how it looks. Apply the same login gate: the user signs in themselves; you never handle credentials.
 
 ---
 
@@ -77,7 +87,7 @@ Use the `#skill:appsheet-migration-recommendation` skill to turn the scorecard i
 ## Blueprint & Automated Handover
 
 1. **Get explicit sign-off** on the recommended path before building anything.
-2. **Author the handoff contract** with the `#skill:migration-blueprint` skill — write `spec/migration-blueprint.md` (+ `spec/app-inventory.json`) containing the chosen path, feature mapping, ordered build backlog, and per-task acceptance criteria.
+2. **Author the handoff contract** with the `#skill:migration-blueprint` skill — write `spec/migration-blueprint.md` (+ `spec/app-inventory.json`) containing the chosen path, feature mapping, ordered build backlog, and per-task acceptance criteria. If visual discovery was run, reference `spec/visual-discovery/` in the blueprint so the design intent (screens, navigation, theme, form layouts) is part of the contract the builder must match.
 3. **Hand over automatically** by invoking the right builder subagent (`runSubagent`), passing the blueprint path:
    - Power Platform → **Power Platform Builder**, then **Power Platform Tester**. Before handover, confirm the **Canvas Authoring MCP** (`canvas-authoring` server in `.vscode/mcp.json`, `canvasauthori` tools) is installed and connected — the builder MUST use it and the `#skill:powerplatform-build` skill to author/compile every canvas screen. If the MCP is missing, walk the user through installing it (install the .NET 10 SDK so `dnx` is available, then start the `canvas-authoring` server) before proceeding.
    - Pro Dev → **.NET Builder**, then **.NET Tester**.

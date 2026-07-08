@@ -12,6 +12,7 @@ Implement the app described in `spec/migration-blueprint.md` on the Power Platfo
 
 - `spec/migration-blueprint.md` — backlog + acceptance criteria (source of truth).
 - `spec/app-inventory.json` — machine-readable inventory.
+- `spec/visual-discovery/` *(optional)* — screenshots + `ux-inventory.md` from the `appsheet-visual-discovery` skill. When present, this is the **design target** for the canvas UI: match the original app's layout, navigation pattern, theme (color/fonts), and form structure — not just its logic. Where a screenshot and the JSON export disagree, the screenshot wins for **appearance/interaction**; the export wins for **logic/expressions**.
 
 ## Required Tooling — Canvas Authoring MCP (MANDATORY)
 
@@ -36,7 +37,7 @@ Before implementing any component, confirm the current capability/limitation via
 
 1. **Solution** — create a Dataverse solution to hold all components (use `pac` CLI where available; otherwise emit solution source under `build/powerplatform/`).
 2. **Data** — Dataverse tables, columns, keys, relationships, choices from the inventory. Migrate Google Sheets/external data to Dataverse or Dataflows.
-3. **UI** — canvas screens (galleries + forms) or model-driven forms/views matching AppSheet views. Author every canvas screen through the **Canvas Authoring MCP** (compile + app-check each screen); never emit unvalidated `.pa.yaml`.
+3. **UI** — canvas screens (galleries + forms) or model-driven forms/views matching AppSheet views. Author every canvas screen through the **Canvas Authoring MCP** (compile + app-check each screen); never emit unvalidated `.pa.yaml`. If `spec/visual-discovery/` exists, use its screenshots + `ux-inventory.md` as the visual target — reproduce the original layout, navigation order, theme, and form field grouping, not just the data bindings.
 4. **Logic** — Power Fx for computed columns, valid-if/show-if, actions. Map AppSheet expressions per the blueprint mapping.
 5. **Automation** — Power Automate cloud flows replacing WorkflowRules (email, notifications, webhooks, scheduled).
 6. **Security** — Dataverse security roles + row-level rules replicating AppSheet UserRoles.
