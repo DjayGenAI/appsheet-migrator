@@ -1,3 +1,27 @@
+## How I used this
+
+I applied this agentic migration workflow in a live enterprise setting to accelerate the
+conversion of Google AppSheet apps to Microsoft Power Platform, as part of a broader
+Google Workspace → Microsoft 365 transformation.
+
+**Context.** During a large-scale digital workplace migration, several business-critical
+AppSheet apps needed like-for-like equivalents on Power Platform. Rebuilding them by hand
+would have taken weeks per app.
+
+**What I did.**
+- Ran the agent-driven assessment on exported AppSheet definitions to inventory tables, business logic, and integrations
+- Used the decision-tree scorecard to select the right target per app (Power Platform vs. hybrid)
+- Drove the automated build-and-test loop to generate like-for-like canvas apps, then validated them against the original app's UX
+
+**Outcome.** App rebuild effort dropped from weeks to days while preserving functional
+parity — freeing the team to focus on adoption rather than reconstruction. (Metrics
+generalized here; specifics available on request.)
+
+---
+
+> Built on the open-source framework by [@comeredon](https://github.com/comeredon/appsheet-migrator).
+> This fork documents my applied, real-world use of it.
+
 # AppSheet → Microsoft Migration Agent
 
 An agent-driven workflow that takes a **Google AppSheet app export (JSON)** and turns it into a migrated app on the Microsoft stack — **Power Platform (low-code)**, **.NET / Azure (pro-code)**, or a **Hybrid** — through an interactive, evidence-based assessment and an automated build/test loop.
